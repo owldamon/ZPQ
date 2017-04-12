@@ -344,7 +344,7 @@
           errorText.style.bottom = 0;
           errorText.style.right = 0;
           errorText.style.color = "#F00";
-          errorText.innerHTML = "网络请求出现问题，请检查网络连接，成功后刷新页面！";
+          errorText.innerHTML = "请稍等15秒";
           document.body.appendChild(errorText);
         }
       });
@@ -362,7 +362,7 @@
       setTimeout(function () {
       	var index = Math.round(Math.random() * 3);
       	transform(autoTransform[index], 2000);
-      }, 30000)
+      }, 15000)
     }, 5000)
 
     // $('#sphere').on('click', function() {
