@@ -13,19 +13,29 @@
 
 <body>
   <div id="container"></div>
-  <div class="button">
-    <button id="sphere">抽奖</button>
-    <button id="imgReset">重置照片信息</button>
-  </div>
+
   <div class="lottoFrom">
-    <div class="lottoLevel"></div>
-    <select>
-      <option value="一等奖">一等奖</option>
-      <option value="二等奖">二等奖</option>
-      <option value="三等奖">三等奖</option>
-      <option value="四等奖">四等奖</option>
-    </select>
-    <button id="confirm">确认</button>
+    <div class="button">
+      <button id="sphere">抽奖模式</button>
+      <button id="imgReset">重置照片信息</button>
+    </div>
+    <div class="levelSelect">
+      <p>请选择奖项</p>
+      <ul>
+        <li>一等奖</li>
+        <li>二等奖</li>
+        <li>三等奖</li>
+        <li>四等奖</li>
+        <li>五等奖</li>
+        <li>六等奖</li>
+      </ul>
+    </div>
+    <input type="text" id="pnum" name="pnum" value="" placeholder="请选择人数">
+    <button id="confirm">开始抽奖</button>
+    <button id="stop">停止</button>
+  </div>
+  <div id="lottoList">
+
   </div>
   <canvas id="text" style="display: none; position: absolute; left: 0; top: 0;"></canvas>
   <p id="errorInfo"></p>

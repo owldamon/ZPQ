@@ -17,6 +17,9 @@ var indexLocalstroge = 0;
 var value = localStorage.getItem("val");
 var deg = 0;
 var posId = 0;
+var N = 1;
+var levelSelect = $('.levelSelect');
+var lottoInfo = [];
 init();
 animate();
 
@@ -113,6 +116,7 @@ function init() {
   // 检查本地存储
   if (storage["img"] && storage["img"].length > 0) {
     imgJson = JSON.parse(storage["img"]);
+    imgJson.length = imgJson.length > 60 ? 60 : imgJson.length;
     posId = imgJson.length - 1;
     Id = imgJson.length - 1;
     for (var i = 0; i < imgJson.length; i++) {
@@ -156,58 +160,128 @@ function init() {
   var transTimerNum = 0;
 
   // 轮询
-  // var isLotto = setInterval(function() {
-  //   arrayAjax(Id);
-  //   if (transTimerNum == 0 || transTimerNum % 4 == 0) {
-  //     setTimeout(function() {
-  //       var index = Math.round(Math.random() * 2);
-  //       transform(autoTransform[index], 2000);
-  //     }, 15000);
-  //   };
-  //   transTimerNum++;
-  // }, 5000);
+  var isLotto2;
+  var isLotto1 = setInterval(function() {
+    arrayAjax(Id);
+    if (transTimerNum == 0 || transTimerNum % 4 == 0) {
+      isLotto2 = setTimeout(function() {
+        var index = Math.round(Math.random() * 2);
+        transform(autoTransform[index], 2000);
+      }, 15000);
+    };
+    transTimerNum++;
+  }, 5000);
 
   // 按钮
+  var randomN;
   $('#sphere').on('click', function() {
+    clearInterval(isLotto1);
+    if (!!isLotto2) { clearTimeout(isLotto2) };
     transform(targets.table, 2000);
-    clearInterval(isLotto);
   });
   $('#imgReset').on('click', function() {
     storage["img"] = '';
     window.location.href = window.location.href;
+  });
+  levelSelect.find('p').on('click', function() {
+    levelSelect.find('ul').css('height', '168px');
+  });
+  levelSelect.find('li').on('click', function() {
+    levelSelect.find('p').css('color', 'rgba(128, 255, 255, 0.75)');
+    levelSelect.find('p').text($(this).text());
+    levelSelect.find('ul').css('height', '0');
+  });
+  $('#stop').on('click', function() {
+    var isDis = true;
+    if (!randomN) return;
+    clearTimeout(randomN);
+    randomN = null;
+    N = 1;
+    lottoInfo.forEach(function(i) {
+      creatElement(i, isDis)
+    })
+  })
+  $('#confirm').on('click', function() {
+    if (!!randomN) clearTimeout(randomN);
+    $('#lottoList').html('');
+    var lottoLevel = levelSelect.find('p').text();
+    var pNum = $('#pnum').val();
+    if (lottoLevel == '请选择奖项') {
+      levelSelect.find('p').css('color', '#F00');
+      return;
+    };
+    if (pNum == '') {
+      return;
+    };
+    randomN = setInterval(function() {
+      N = N == 50 ? 1 : 50;
+    }, 1000);
+
+    $.ajax({
+      type: 'post',
+      url: 'http://127.0.0.1:3000/users/lotto',
+      dataType: 'json',
+      data: {
+        lottoLevel: lottoLevel,
+        pNum: pNum
+      },
+      success: function(data) {
+        lottoInfo = data;
+      },
+      error: function(error) {
+        $("#errorInfo").html('网络出现问题！');
+      }
+    })
+  });
+  $('#lottoList').on('click', 'span', function() {
+    $(this).parent().fadeOut();
   })
   window.addEventListener('resize', onWindowResize, false);
 }
 
-function creatElement(data) {
+function creatElement(data, isDis) {
   var element1 = document.createElement('div');
   element1.className = 'element1';
   var symbol = document.createElement('img');
   symbol.className = 'symbol';
   symbol.src = data.img;
   element1.appendChild(symbol);
+  if (isDis) {
+    var name = document.createElement('p');
+    name.innerText = data.name;
+    element1.appendChild(name);
+    var Dspan = document.createElement('span');
+    Dspan.innerText = 'X';
+    element1.appendChild(Dspan);
+    document.getElementById('lottoList').appendChild(element1);
+    return;
+  }
   var object = new THREE.CSS3DObject(element1);
   element1.style.left = getPosition(window.innerWidth / 2, 0, true) + 'px';
   element1.style.top = getPosition(window.innerHeight - 350, 0, true) + 'px';
   document.getElementById('container').appendChild(element1);
+  elementAnimate(data, element1)
+};
+
+function elementAnimate(data, element) {
   var MartRadom = Math.floor(Math.random() * 60);
   setTimeout(function() {
-    $('.element1').css({
-      'top': '35%',
-      'left': '40%',
+    $('#container').find('.element1').css({
+      'top': '30%',
+      'left': '36%',
       'transform': 'scale(0)'
     });
     setTimeout(function() {
-      document.getElementById('container').removeChild(element1);
-      if (posId < 60) {
+      document.getElementById('container').removeChild(element);
+      if (posId < 59) {
         objects[posId].element.style.backgroundImage = "url(" + data.img + ")";
         posId++;
-      } else if (posId >= 60) {
+      } else if (posId >= 59) {
         objects[MartRadom].element.style.backgroundImage = "url(" + data.img + ")";
       };
     }, 3000);
   }, 3000);
-};
+}
 
 function arrayAjax(id) {
   var _data;
@@ -297,7 +371,7 @@ function onWindowResize() {
 }
 
 function xz() {
-  deg += Math.PI / 270;
+  deg += Math.PI / 270 * N;
   camera.position.z = 3000 * Math.cos(deg);
   camera.position.x = 3000 * Math.sin(deg);
   scene.children[60].rotation.y += 0.05;
@@ -320,7 +394,7 @@ function animate() {
 
   requestAnimationFrame(animate);
 
-  //xz();
+  xz();
 
   TWEEN.update();
 
