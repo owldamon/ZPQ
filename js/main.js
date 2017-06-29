@@ -20,6 +20,7 @@ var posId = 0;
 var N = 1;
 var levelSelect = $('.levelSelect');
 var lottoInfo = [];
+var lottoList = [];
 init();
 animate();
 
@@ -178,19 +179,42 @@ function init() {
     clearInterval(isLotto1);
     if (!!isLotto2) { clearTimeout(isLotto2) };
     transform(targets.table, 2000);
+    $.ajax({
+      type: 'get',
+      url: 'http://127.0.0.1:3000/users/lottoList',
+      dataType: 'json',
+      success: function(data){
+        lottoList = data;
+        for(var i = 0; i < lottoList.length; i++) {
+          var li = document.createElement('li');
+          li.innerText = lottoList[i].name;
+          levelSelect.find('ul').append(li);
+        }
+      }
+    })
   });
   $('#imgReset').on('click', function() {
     storage["img"] = '';
     window.location.href = window.location.href;
   });
-  levelSelect.find('p').on('click', function() {
-    levelSelect.find('ul').css('height', '168px');
+  levelSelect.on('click', 'p', function() {
+    var height = lottoList.length * 28
+    levelSelect.find('ul').css('height', height + 'px');
   });
-  levelSelect.find('li').on('click', function() {
+  levelSelect.on('click', 'li', function() {
+    $('#pnum').val('');
     levelSelect.find('p').css('color', 'rgba(128, 255, 255, 0.75)');
     levelSelect.find('p').text($(this).text());
     levelSelect.find('ul').css('height', '0');
+    var index = $(this).index();
+    $('#pnum').on('input', function(){
+      var nowVal = $(this).val();
+      if(nowVal > lottoList[index].num) {
+        $(this).val(lottoList[index].num)
+      }
+    });
   });
+  
   $('#stop').on('click', function() {
     var isDis = true;
     if (!randomN) return;
@@ -219,7 +243,7 @@ function init() {
 
     $.ajax({
       type: 'post',
-      url: 'http://127.0.0.1:3000/users/lotto',
+      url: 'http://127.0.0.1:3000/users/lottoUser',
       dataType: 'json',
       data: {
         lottoLevel: lottoLevel,

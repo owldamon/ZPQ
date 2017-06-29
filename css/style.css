@@ -46,14 +46,12 @@ a {
 
 .lottoFrom {
   position: absolute;
-  right: 0;
   left: 0;
   top: 0;
   margin: 0 auto;
   width: 500px;
 }
 
-#confirm {}
 
 #menu {
   position: absolute;
