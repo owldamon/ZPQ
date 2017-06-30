@@ -180,7 +180,7 @@ button:active {
 #lottoList {
   position: absolute;
   top: 50%;
-  right: 0;
+  right: -20px;
   width: 500px;
   height: 600px;
   margin-top: -300px;

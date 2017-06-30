@@ -21,6 +21,9 @@ var N = 1;
 var levelSelect = $('.levelSelect');
 var lottoInfo = [];
 var lottoList = [];
+var isAgain = false;
+var randomN;
+var nowLotto = true;
 init();
 animate();
 
@@ -174,9 +177,10 @@ function init() {
   }, 5000);
 
   // 按钮
-  var randomN;
+  
   $('#sphere').on('click', function() {
     clearInterval(isLotto1);
+    levelSelect.find('p').html('请选择奖项');
     if (!!isLotto2) { clearTimeout(isLotto2) };
     transform(targets.table, 2000);
     $.ajax({
@@ -203,6 +207,7 @@ function init() {
   });
   levelSelect.on('click', 'li', function() {
     $('#pnum').val('');
+    isAgain = false;
     levelSelect.find('p').css('color', 'rgba(128, 255, 255, 0.75)');
     levelSelect.find('p').text($(this).text());
     levelSelect.find('ul').css('height', '0');
@@ -214,53 +219,68 @@ function init() {
       }
     });
   });
-  
-  $('#stop').on('click', function() {
-    var isDis = true;
-    if (!randomN) return;
-    clearTimeout(randomN);
-    randomN = null;
-    N = 1;
-    lottoInfo.forEach(function(i) {
-      creatElement(i, isDis)
-    })
-  })
+
   $('#confirm').on('click', function() {
     if (!!randomN) clearTimeout(randomN);
-    $('#lottoList').html('');
-    var lottoLevel = levelSelect.find('p').text();
-    var pNum = $('#pnum').val();
-    if (lottoLevel == '请选择奖项') {
-      levelSelect.find('p').css('color', '#F00');
-      return;
-    };
-    if (pNum == '') {
-      return;
-    };
-    randomN = setInterval(function() {
-      N = N == 50 ? 1 : 50;
-    }, 1000);
-
-    $.ajax({
-      type: 'post',
-      url: 'http://127.0.0.1:3000/users/lottoUser',
-      dataType: 'json',
-      data: {
-        lottoLevel: lottoLevel,
-        pNum: pNum
-      },
-      success: function(data) {
-        lottoInfo = data;
-      },
-      error: function(error) {
-        $("#errorInfo").html('网络出现问题！');
+    if(nowLotto) {
+      $(this).text('停止');
+      nowLotto = !nowLotto;
+      if (isAgain) {
+        lottoGo()
+        return;
       }
-    })
+      $('#lottoList').html('');
+      lottoGo()
+    } else {
+      $(this).text('开始抽奖');
+      nowLotto = !nowLotto;
+      var isDis = true;
+      if (!randomN) return;
+      clearTimeout(randomN);
+      randomN = null;
+      N = 1;
+      lottoInfo.forEach(function(i) {
+        creatElement(i, isDis)
+      })
+    }
+    
   });
   $('#lottoList').on('click', 'span', function() {
     $(this).parent().fadeOut();
+    isAgain = true; 
   })
   window.addEventListener('resize', onWindowResize, false);
+}
+
+function lottoGo() {
+  var lottoLevel = levelSelect.find('p').text();
+  var pNum = $('#pnum').val();
+  if (lottoLevel == '请选择奖项') {
+    levelSelect.find('p').css('color', '#F00');
+    return;
+  };
+  if (pNum == '') {
+    return;
+  };
+  randomN = setInterval(function() {
+    N = N == 50 ? 1 : 50;
+  }, 1000);
+
+  $.ajax({
+    type: 'post',
+    url: 'http://127.0.0.1:3000/users/lottoUser',
+    dataType: 'json',
+    data: {
+      lottoLevel: lottoLevel,
+      pNum: pNum
+    },
+    success: function(data) {
+      lottoInfo = data;
+    },
+    error: function(error) {
+      $("#errorInfo").html('网络出现问题！');
+    }
+  })
 }
 
 function creatElement(data, isDis) {
