@@ -32,7 +32,7 @@ function init() {
   var logo = new Image();
 
   logo.id = 'logo';
-  logo.src = "https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1498545811157&di=9fd33dabbf59a7d6fdf9c5e4c29da019&imgtype=0&src=http%3A%2F%2Fi4.hexunimg.cn%2F2015-09-02%2F178804088.jpg";
+  logo.src = "/images/logo.png";
   var LOGO = new THREE.CSS3DObject(logo);
   LOGO.position.x = 0;
   LOGO.position.y = 0;
@@ -177,9 +177,10 @@ function init() {
   }, 5000);
 
   // 按钮
-  
+  // 抽奖模式
   $('#sphere').on('click', function() {
     clearInterval(isLotto1);
+    levelSelect.find('ul').html('');
     levelSelect.find('p').html('请选择奖项');
     if (!!isLotto2) { clearTimeout(isLotto2) };
     transform(targets.table, 2000);
@@ -191,6 +192,7 @@ function init() {
         lottoList = data;
         for(var i = 0; i < lottoList.length; i++) {
           var li = document.createElement('li');
+          li.setAttribute('data-id', lottoList[i].id)
           li.innerText = lottoList[i].name;
           levelSelect.find('ul').append(li);
         }
@@ -202,14 +204,16 @@ function init() {
     window.location.href = window.location.href;
   });
   levelSelect.on('click', 'p', function() {
+    $(this).css('color', '#FFF');
+    if(levelSelect.find('ul').html() == '') return;
     var height = lottoList.length * 28
-    levelSelect.find('ul').css('height', height + 'px');
+    levelSelect.find('ul').css('height', height  + 60 + 'px');
   });
   levelSelect.on('click', 'li', function() {
     $('#pnum').val('');
     isAgain = false;
-    levelSelect.find('p').css('color', 'rgba(128, 255, 255, 0.75)');
     levelSelect.find('p').text($(this).text());
+    levelSelect.find('p').attr('data-id', $(this).data('id'));
     levelSelect.find('ul').css('height', '0');
     var index = $(this).index();
     $('#pnum').on('input', function(){
@@ -221,16 +225,22 @@ function init() {
   });
 
   $('#confirm').on('click', function() {
+    var lottoLevel = levelSelect.find('p').data('id');
+    var lottoText = levelSelect.find('p').text();
+    if (lottoText == '请选择奖项') {
+      levelSelect.find('p').css('color', '#000');
+      return;
+    };
     if (!!randomN) clearTimeout(randomN);
     if(nowLotto) {
       $(this).text('停止');
       nowLotto = !nowLotto;
       if (isAgain) {
-        lottoGo()
+        lottoGo(lottoLevel)
         return;
       }
       $('#lottoList').html('');
-      lottoGo()
+      lottoGo(lottoLevel)
     } else {
       $(this).text('开始抽奖');
       nowLotto = !nowLotto;
@@ -252,13 +262,8 @@ function init() {
   window.addEventListener('resize', onWindowResize, false);
 }
 
-function lottoGo() {
-  var lottoLevel = levelSelect.find('p').text();
+function lottoGo(lottoLevel) {
   var pNum = $('#pnum').val();
-  if (lottoLevel == '请选择奖项') {
-    levelSelect.find('p').css('color', '#F00');
-    return;
-  };
   if (pNum == '') {
     return;
   };
@@ -266,12 +271,13 @@ function lottoGo() {
     N = N == 50 ? 1 : 50;
   }, 1000);
 
+  // 获取中奖人
   $.ajax({
     type: 'post',
     url: 'http://127.0.0.1:3000/users/lottoUser',
     dataType: 'json',
     data: {
-      lottoLevel: lottoLevel,
+      id: lottoLevel,
       pNum: pNum
     },
     success: function(data) {
@@ -327,6 +333,7 @@ function elementAnimate(data, element) {
   }, 3000);
 }
 
+// 轮询
 function arrayAjax(id) {
   var _data;
   $.ajax({

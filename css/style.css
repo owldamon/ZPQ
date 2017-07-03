@@ -6,6 +6,7 @@ body {
 * {
   margin: 0;
   padding: 0;
+  font-family: '微软雅黑';
 }
 
 body {
@@ -47,9 +48,10 @@ a {
 .lottoFrom {
   position: absolute;
   left: 0;
-  top: 0;
+  right: 0;
+  bottom: 20px;
   margin: 0 auto;
-  width: 500px;
+  width: 680px;
 }
 
 
@@ -102,75 +104,85 @@ a {
 
 #container {
   height: 100%;
-  /*background: url('bg1.jpg') no-repeat;*/
+  background: url('/images/bg.jpg') no-repeat;
   background-size: 100% 100%;
 }
 
 button {
-  color: rgba(127, 255, 255, 0.75);
-  background: transparent;
-  outline: 1px solid rgba(127, 255, 255, 0.75);
+  background: url(/images/btn.png) center no-repeat;
   border: 0px;
   padding: 5px 10px;
   cursor: pointer;
+  color: #FFF;
+  width: 131px;
+  height: 36px;
 }
-
-button:hover {
-  background-color: rgba(0, 255, 255, 0.5);
+button:focus {
+  border: 0;
+  outline: 0;
 }
-
-button:active {
-  color: #000000;
-  background-color: rgba(0, 255, 255, 0.75);
-}
-
 .button {
   float: left;
 }
 
 .levelSelect {
+  position: relative;
   float: left;
   margin: 0 4px;
-  color: rgba(127, 255, 255, 0.75);
-  outline: 1px solid rgba(127, 255, 255, 0.75);
+  width: 131px;
+  height: 36px;
 }
 
 .levelSelect p {
+  position: absolute;
   margin: 0;
   padding: 5px 10px;
-  width: 70px;
+  width: 111px;
+  height: 26px;
   font-size: 14px;
   cursor: pointer;
   text-align: center;
+  line-height: 26px;
+  color: #FFF;
+  background: url(/images/btn.png) center no-repeat;
 }
 
 .levelSelect ul {
+  position: absolute;
+  bottom: 18px;
   margin: 0;
   padding: 0;
+  width: 100%;
   list-style: none;
   text-align: center;
   height: 0;
   transition: .5s all;
   overflow: hidden;
+  background: rgba(184, 32, 158, 0.6)
 }
 
 .levelSelect ul li {
   padding: 4px 0;
   cursor: pointer;
-  border-top: 1px solid rgba(127, 255, 255, 0.75);
+  color: #FFF;
 }
 
 .levelSelect ul li:hover {
-  background: #f00;
+  background: #FF00DF;
 }
 
 #pnum {
-  width: 70px;
-  padding: 5px 10px;
-  height: 16px;
-  border: 1px solid rgba(127, 255, 255, 0.75);
-  background: none;
-  color: rgba(127, 255, 255, 0.75)
+  padding: 0 10px;
+  width: 111px;
+  height: 36px;
+  outline: none;
+  border: 0;
+  color: #FFF;
+  background: url(/images/btn.png) center no-repeat;
+  text-align: center;
+}
+#pnum[placeholder] {
+  color: #FFF;
 }
 
 #pnum:focus {
@@ -214,4 +226,17 @@ button:active {
   line-height: 20px;
   background: #FFF;
   cursor: pointer;
+}
+
+::-webkit-input-placeholder { /* WebKit, Blink, Edge */
+  color: #FFF;
+}
+:-moz-placeholder { /* Mozilla Firefox 4 to 18 */
+  color: #FFF;
+}
+::-moz-placeholder { /* Mozilla Firefox 19+ */
+  color: #FFF;
+}
+:-ms-input-placeholder { /* Internet Explorer 10-11 */
+  color: #FFF;
 }
