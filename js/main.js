@@ -19,16 +19,38 @@ var deg = 0;
 var posId = 0;
 var N = 1;
 var levelSelect = $('.levelSelect');
-var lottoInfo = [];
 var lottoList = [];
 var isAgain = false;
 var randomN;
 var nowLotto = true;
+var Id = 0;
+var baseURL = "https://wechat.fstuis.com";
+var lottoLevel;
+var deleteArr = [];
+var testData = [{
+  headimgurl: "http://wx.qlogo.cn/mmopen/yYIJXzqAHxwrd6DkI59ib6nW9dna3jibdsFqbkK2I6wekibQVwGpOmIhYlwuibo9DhHa1MvVyMxhq6iao7EE6JfBkdkfl4B92tczx/0",
+  id: 2,
+  nickname: "AAA胡俊峰",
+  wechat_signed_pic: [{
+    url: "/uploads/wechat/201707042228a806722c71cc8dca9461e2a61b13.png",
+    wechat_fans_id: 2
+  }]
+},{
+  headimgurl: "http://wx.qlogo.cn/mmopen/yYIJXzqAHxwrd6DkI59ib6nW9dna3jibdsFqbkK2I6wekibQVwGpOmIhYlwuibo9DhHa1MvVyMxhq6iao7EE6JfBkdkfl4B92tczx/0",
+  id: 3,
+  nickname: "AAA胡俊峰",
+  wechat_signed_pic: [{
+    url: "/uploads/wechat/201707042228a806722c71cc8dca9461e2a61b13.png",
+    wechat_fans_id: 2
+  }]
+}]
+
+var lottoInfo = []; //testData;
+
 init();
 animate();
 
 function init() {
-  var Id = 0;
   var logo = new Image();
 
   logo.id = 'logo';
@@ -124,7 +146,7 @@ function init() {
     posId = imgJson.length - 1;
     Id = imgJson.length - 1;
     for (var i = 0; i < imgJson.length; i++) {
-      objects[i].element.style.backgroundImage = "url(" + imgJson[i].img + ")";
+      objects[i].element.style.backgroundImage = "url(" + imgJson[i].url + ")";
     }
   }
   // 文字扫描
@@ -186,10 +208,11 @@ function init() {
     transform(targets.table, 2000);
     $.ajax({
       type: 'get',
-      url: 'http://127.0.0.1:3000/users/lottoList',
+      url: baseURL + '/wechat/v1/lottery/prize/1',
       dataType: 'json',
       success: function(data){
-        lottoList = data;
+        console.log(data);
+        lottoList = data.data.prize_list;
         for(var i = 0; i < lottoList.length; i++) {
           var li = document.createElement('li');
           li.setAttribute('data-id', lottoList[i].id)
@@ -206,26 +229,28 @@ function init() {
   levelSelect.on('click', 'p', function() {
     $(this).css('color', '#FFF');
     if(levelSelect.find('ul').html() == '') return;
-    var height = lottoList.length * 28
+    var height = lottoList.length * 28;
     levelSelect.find('ul').css('height', height  + 60 + 'px');
   });
   levelSelect.on('click', 'li', function() {
     $('#pnum').val('');
     isAgain = false;
+    $('#lottoPrize').find('p').text($(this).text());
+    $('#lottoPrize').find('img').attr('src', baseURL + lottoList[$(this).index()].thumb);
+    lottoLevel = $(this).data('id');
     levelSelect.find('p').text($(this).text());
     levelSelect.find('p').attr('data-id', $(this).data('id'));
     levelSelect.find('ul').css('height', '0');
     var index = $(this).index();
+    $('#pnum').off();
     $('#pnum').on('input', function(){
       var nowVal = $(this).val();
-      if(nowVal > lottoList[index].num) {
-        $(this).val(lottoList[index].num)
+      if(nowVal > lottoList[index].number) {
+        $(this).val(lottoList[index].number)
       }
     });
   });
-
   $('#confirm').on('click', function() {
-    var lottoLevel = levelSelect.find('p').data('id');
     var lottoText = levelSelect.find('p').text();
     if (lottoText == '请选择奖项') {
       levelSelect.find('p').css('color', '#000');
@@ -236,11 +261,11 @@ function init() {
       $(this).text('停止');
       nowLotto = !nowLotto;
       if (isAgain) {
-        lottoGo(lottoLevel)
+        lottoGo()
         return;
       }
       $('#lottoList').html('');
-      lottoGo(lottoLevel)
+      lottoGo()
     } else {
       $(this).text('开始抽奖');
       nowLotto = !nowLotto;
@@ -257,31 +282,49 @@ function init() {
   });
   $('#lottoList').on('click', 'span', function() {
     $(this).parent().fadeOut();
+    var deleteIndex = ($(this).data('id'));
     isAgain = true; 
+    $.ajax({
+      type: 'post',
+      url: baseURL + '/wechat/v1/lottery/delete_winner/1/1',
+      data: {
+        ids: 1
+      },
+      success: function(data){
+        console.log(data);
+       
+      },
+      error: function(error) {
+      }
+    })
+
   })
   window.addEventListener('resize', onWindowResize, false);
 }
 
-function lottoGo(lottoLevel) {
-  var pNum = $('#pnum').val();
+function lottoGo() {
+  $("#errorInfo").html('');
+  var pNum = parseInt($('#pnum').val());
   if (pNum == '') {
     return;
   };
   randomN = setInterval(function() {
     N = N == 50 ? 1 : 50;
   }, 1000);
-
   // 获取中奖人
   $.ajax({
     type: 'post',
-    url: 'http://127.0.0.1:3000/users/lottoUser',
+    url: baseURL + '/wechat/v1/lottery/winner/1/' + lottoLevel ,
     dataType: 'json',
     data: {
-      id: lottoLevel,
-      pNum: pNum
+      number: pNum
     },
     success: function(data) {
-      lottoInfo = data;
+      console.log(data.data);
+      if(data.data == null) {
+        $("#errorInfo").html('抽奖人数有误！');
+      }
+      lottoInfo = data.data;
     },
     error: function(error) {
       $("#errorInfo").html('网络出现问题！');
@@ -294,14 +337,15 @@ function creatElement(data, isDis) {
   element1.className = 'element1';
   var symbol = document.createElement('img');
   symbol.className = 'symbol';
-  symbol.src = data.img;
+  symbol.src = data.headimgurl || data.url;
   element1.appendChild(symbol);
   if (isDis) {
     var name = document.createElement('p');
-    name.innerText = data.name;
+    name.innerText = data.nickname;
     element1.appendChild(name);
     var Dspan = document.createElement('span');
     Dspan.innerText = 'X';
+    Dspan.setAttribute('data-id', data.id)
     element1.appendChild(Dspan);
     document.getElementById('lottoList').appendChild(element1);
     return;
@@ -324,10 +368,10 @@ function elementAnimate(data, element) {
     setTimeout(function() {
       document.getElementById('container').removeChild(element);
       if (posId < 59) {
-        objects[posId].element.style.backgroundImage = "url(" + data.img + ")";
+        objects[posId].element.style.backgroundImage = "url(" + data.url + ")";
         posId++;
       } else if (posId >= 59) {
-        objects[MartRadom].element.style.backgroundImage = "url(" + data.img + ")";
+        objects[MartRadom].element.style.backgroundImage = "url(" + data.url + ")";
       };
     }, 3000);
   }, 3000);
@@ -335,21 +379,18 @@ function elementAnimate(data, element) {
 
 // 轮询
 function arrayAjax(id) {
-  var _data;
   $.ajax({
-    type: 'post',
-    url: 'http://127.0.0.1:3000/users/bar',
-    dataType: 'json',
-    data: {
-      id: id
-    },
+    type: 'get',
+    url: baseURL + '/wechat/v1/image_list/1/' + id,
     success: function(data) {
       $("#errorInfo").html('');
-      Id = data.id || id;
-      if (data != undefined && data.img != undefined) {
-        imgJson.push(data);
+      if (data.data != undefined && data.data.url != undefined) {
+        Id = data.data.id;
+        data.data.url = baseURL + data.data.url;
+        
+        imgJson.push(data.data);
         storage["img"] = JSON.stringify(imgJson);
-        creatElement(data);
+        creatElement(data.data);
       } else {
         imgJson = JSON.parse(storage["img"]);
         creatElement(imgJson[indexLocalstroge]);

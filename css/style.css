@@ -240,3 +240,22 @@ button:focus {
 :-ms-input-placeholder { /* Internet Explorer 10-11 */
   color: #FFF;
 }
+
+#lottoPrize {
+  position: absolute;
+  top: 50%;
+  left: 20px;
+  width: 500px;
+  height: 600px;
+  margin-top: -300px;
+  overflow-y: auto;
+}
+#lottoPrize img {
+  width: 100%;
+}
+#lottoPrize p {
+  margin-bottom: 20px; 
+  font-size: 30px;
+  color: #F8D811;
+  text-align: center;
+}
